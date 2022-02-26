@@ -30,3 +30,7 @@ curl -s localhost:8080/metrics
 ## Deployment
 
 All is in `helm/` subdirectory.
+
+## Dashboard
+
+The gin dashboard is under grafana/
