@@ -1,0 +1,68 @@
+---
+
+rbac:
+  create: false
+
+serviceAccounts:
+  alertmanager:
+    create: false
+    name: prometheus
+  nodeExporter:
+    create: false
+    name: prometheus
+  pushGateway:
+    create: false
+    name: prometheus
+  server:
+    create: false
+    name: prometheus
+
+server:
+  extraFlags:
+    - storage.tsdb.min-block-duration=2h
+    - storage.tsdb.max-block-duration=2h
+  replicaCount: 2
+  statefulSet:
+    enabled: true
+  sidecarContainers:
+    thanos:
+      image: docker.io/bitnami/thanos:0.24.0-scratch-r7
+      args:
+        - "sidecar"
+        - "--log.level=debug"
+        - "--tsdb.path=/data"
+        - "--prometheus.url=http://127.0.0.1:9090"
+        - "--objstore.config-file=/objstore-config/objstore.yml"
+        # - "--reloader.config-file=/etc/config/prometheus.yaml.tmpl"
+        # - "--reloader.config-envsubst-file=/etc/config/prometheus.yaml"
+        # - "--reloader.rule-dir=/etc/prometheus/rules/"
+      env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+      ports:
+        - name: http-sidecar
+          containerPort: 10902
+        - name: grpc
+          containerPort: 10901
+      livenessProbe:
+        httpGet:
+          port: 10902
+          path: /-/healthy
+      readinessProbe:
+        httpGet:
+          port: 10902
+          path: /-/ready
+      volumeMounts:
+        - name: storage-volume
+          mountPath: /data
+        - name: config-volume
+          mountPath: /etc/config
+#         - name: objstore-config
+#           mountPath: /objstore-config
+#       volumes:
+#         - name: objstore-config
+#           secret:
+#             defaultMode: 420
+#             secretName: thanos-objstore-secret

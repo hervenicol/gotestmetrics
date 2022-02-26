@@ -1,0 +1,55 @@
+---
+
+existingServiceAccount: prometheus
+clusterDomain: eu-central-1.local
+objstoreConfig: |-
+  type: s3
+  config:
+    bucket: thanos
+    endpoint: {{ include "thanos.minio.fullname" . }}.default.svc.eu-central-1.local:9000
+    access_key: admin
+    secret_key: minio123
+    insecure: true
+query:
+  dnsDiscovery:
+    sidecarsService: prometheus-server
+    sidecarsNamespace: default
+  replicaCount: 2
+queryFrontend:
+  replicaCount: 2
+bucketweb:
+  enabled: true
+  replicaCount: 2
+compactor:
+  enabled: true
+  replicaCount: 2
+storegateway:
+  enabled: true
+  replicaCount: 2
+ruler:
+  enabled: true
+  replicaCount: 2
+  alertmanagers:
+    - http://prometheus-kube-prometheus-alertmanager.default.svc.eu-central-1.local:9093
+  config: |-
+    groups:
+      - name: "metamonitoring"
+        rules:
+          - alert: "PrometheusDown"
+            expr: absent(up{prometheus="default/kube-prometheus"})
+metrics:
+  enabled: true
+  replicaCount: 2
+  serviceMonitor:
+    enabled: true
+minio:
+  fullnameOverride: thanos-minio
+  enabled: true
+  auth:
+    rootUser: "admin"
+    rootPassword: "minio123"
+  defaultBuckets: "thanos"
+  serviceAccount:
+    create: false
+    name: prometheus
+  clusterDomain: eu-central-1.local

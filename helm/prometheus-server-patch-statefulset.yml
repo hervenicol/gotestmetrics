@@ -1,0 +1,15 @@
+---
+
+spec:
+  template:
+    spec:
+      containers:
+        - name: thanos
+          volumeMounts:
+            - name: objstore-config
+              mountPath: /objstore-config
+      volumes:
+        - name: objstore-config
+          secret:
+            defaultMode: 420
+            secretName: thanos-objstore-secret

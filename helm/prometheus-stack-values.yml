@@ -1,0 +1,59 @@
+---
+
+global:
+  rbac:
+    useExistingRole: privileged-psp-user
+
+#     pspEnabled: true
+
+grafana:
+  rbac:
+    useExistingRole: privileged-psp-user
+  ingress:
+    enabled: true
+    hosts:
+      - grafana.myclister.io
+  adminUser: admin
+  adminPassword: guess!
+  persistence:
+    enabled: true
+  securityContext:
+    runAsUser: 1000
+    runAsGroup: 1000
+    fsGroup: 1000
+
+alertmanager:
+  enabled: false
+
+kubeApiServer:
+  enabled: false
+
+kubelet:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+coreDns:
+  enabled: false
+
+kubeDns:
+  enabled: false
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeProxy:
+  enabled: false
+
+kubeStateMetrics:
+  enabled: false
+
+kube-state-metrics:
+  enabled: false
+
+nodeExporter:
+  enabled: false

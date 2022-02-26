@@ -1,0 +1,12 @@
+---
+
+spec:
+  ports:
+    - name: grpc
+      port: 10901
+      protocol: TCP
+      targetPort: 10901
+    - name: http-sidecar
+      port: 10902
+      protocol: TCP
+      targetPort: 10902

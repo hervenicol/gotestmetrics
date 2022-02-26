@@ -1,0 +1,28 @@
+---
+
+rbac:
+  useExistingRole: privileged-psp-user
+  pspEnabled: false
+
+ingress:
+  enabled: true
+  ingressClassName: nginx
+  hosts:
+    - grafana.mycluster.io
+
+adminUser: admin
+adminPassword: guess!
+persistence:
+  enabled: true
+securityContext:
+  runAsUser: 1000
+  runAsGroup: 1000
+  fsGroup: 1000
+
+service:
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "3000"
+
+plugins:
+  - grafana-piechart-panel
