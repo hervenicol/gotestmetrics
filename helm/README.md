@@ -39,7 +39,10 @@ git clone git@github.com:bitnami/charts.git helm-bitnami
 
 ### gotestmetrics
 
-I run the chart with no specific config:
+You should adjust values:
+* grafana.mycluster.io with your own cluster name
+
+Then run the chart with no specific config:
 
 ```
 helm install gotestmetrics gotestmetrics
