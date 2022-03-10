@@ -77,6 +77,7 @@
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
   "id": null,
+  "iteration": 1646925843575,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -85,6 +86,8 @@
       "fieldConfig": {
         "defaults": {
           "mappings": [],
+          "max": 50,
+          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -94,10 +97,11 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 40
               }
             ]
-          }
+          },
+          "unit": "reqps"
         },
         "overrides": []
       },
@@ -112,12 +116,12 @@
         "orientation": "auto",
         "reduceOptions": {
           "calcs": [
-            "mean"
+            "lastNotNull"
           ],
           "fields": "",
           "values": false
         },
-        "showThresholdLabels": false,
+        "showThresholdLabels": true,
         "showThresholdMarkers": true
       },
       "pluginVersion": "8.3.6",
@@ -128,10 +132,10 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": false,
-          "expr": "rate(gin_request_total{job=\"kubernetes-pods\"}[$__rate_interval])",
+          "expr": "sum  by (application) (rate(gin_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\", instance=~\"$instance\"}[$__rate_interval]))",
           "instant": true,
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{app_kubernetes_io_name}}",
           "refId": "A"
         }
       ],
@@ -185,11 +189,11 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "delta(gin_request_total{job=\"kubernetes-pods\"}[$__range])",
+          "expr": "sum by (app_kubernetes_io_instance) (delta(gin_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\" ,instance=~\"$instance\"}[$__range]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{app_kubernetes_io_name}}",
           "refId": "A"
         }
       ],
@@ -270,9 +274,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "delta(gin_request_uv_total{job=\"kubernetes-pods\"}[$__range])",
+          "expr": "sum by (app_kubernetes_io_instance) (delta(gin_request_uv_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\" ,instance=~\"$instance\"}[$__range]))",
           "interval": "",
-          "legendFormat": "{{instance}}",
+          "legendFormat": "{{app_kubernetes_io_name}}",
           "refId": "A"
         }
       ],
@@ -356,12 +360,12 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum by(uri, instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\"}[$__range]))",
+          "expr": "sum by(uri, app_kubernetes_io_instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__range]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{uri}}",
+          "legendFormat": "{{app_kubernetes_io_instance}}-{{uri}}",
           "refId": "A"
         }
       ],
@@ -421,9 +425,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "rate(gin_request_body_total{job=\"kubernetes-pods\"}[$__rate_interval])",
+          "expr": "sum by (app_kubernetes_io_instance) (rate(gin_request_body_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\" ,instance=~\"$instance\"}[$__rate_interval]))",
           "interval": "",
-          "legendFormat": "{{instance}}-in",
+          "legendFormat": "{{app_kubernetes_io_instance}}-in",
           "refId": "A"
         },
         {
@@ -432,9 +436,9 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "rate(gin_response_body_total{job=\"kubernetes-pods\"}[$__rate_interval])",
+          "expr": "sum by (app_kubernetes_io_instance) (rate(gin_response_body_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\" ,instance=~\"$instance\"}[$__rate_interval]))",
           "interval": "",
-          "legendFormat": "{{instance}}-out",
+          "legendFormat": "{{app_kubernetes_io_instance}}-out",
           "refId": "B"
         }
       ],
@@ -502,12 +506,12 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum by(method, instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\"}[$__range]))",
+          "expr": "sum by(method, app_kubernetes_io_instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__range]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{method}}",
+          "legendFormat": "{{app_kubernetes_io_instance}}-{{method}}",
           "refId": "A"
         }
       ],
@@ -522,7 +526,7 @@
       "dashes": false,
       "fieldConfig": {
         "defaults": {
-          "unit": "s"
+          "unit": "ms"
         },
         "overrides": []
       },
@@ -567,7 +571,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "histogram_quantile(0.95, sum (rate(gin_request_duration_bucket{job=\"kubernetes-pods\"}[$__rate_interval])) by (le, instance))",
+          "expr": "histogram_quantile(0.95, sum (rate(gin_request_duration_bucket{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__rate_interval])) by (le, app_kubernetes_io_instance))",
           "interval": "",
           "legendFormat": "p95",
           "refId": "A"
@@ -578,7 +582,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "histogram_quantile(0.99, sum (rate(gin_request_duration_bucket{job=\"kubernetes-pods\"}[$__rate_interval])) by (le, instance))",
+          "expr": "histogram_quantile(0.99, sum (rate(gin_request_duration_bucket{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__rate_interval])) by (le, app_kubernetes_io_instance))",
           "interval": "",
           "legendFormat": "p99",
           "refId": "B"
@@ -589,7 +593,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum (gin_request_duration_sum{job=\"kubernetes-service-endpoints\"}) / sum(gin_request_duration_count{job=\"kubernetes-service-endpoints\"})",
+          "expr": "sum (gin_request_duration_sum{job=\"kubernetes-service-endpoints\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}) / sum(gin_request_duration_count{job=\"kubernetes-service-endpoints\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"})",
           "interval": "",
           "legendFormat": "avg",
           "refId": "C"
@@ -611,7 +615,7 @@
       },
       "yaxes": [
         {
-          "format": "s",
+          "format": "ms",
           "logBase": 1,
           "show": true
         },
@@ -659,12 +663,12 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum by(code, instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\"}[$__range]))",
+          "expr": "sum by(code, app_kubernetes_io_instance) (delta(gin_uri_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__range]))",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{code}}",
+          "legendFormat": "{{app_kubernetes_io_instance}}-{{code}}",
           "refId": "A"
         }
       ],
@@ -703,7 +707,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum(increase(gin_request_duration_bucket{job=\"kubernetes-pods\"}[$__interval])/5) by (le)",
+          "expr": "sum(increase(gin_request_duration_bucket{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"}[$__interval])/5) by (le)",
           "format": "heatmap",
           "instant": false,
           "interval": "",
@@ -776,12 +780,12 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "exemplar": true,
-          "expr": "sum by(uri, instance) (gin_slow_request_total{job=\"kubernetes-pods\"})",
+          "expr": "sum by(uri, app_kubernetes_io_name) (gin_slow_request_total{job=\"kubernetes-pods\", app_kubernetes_io_name=~\"$application\",instance=~\"$instance\"})",
           "format": "time_series",
           "instant": false,
           "interval": "",
           "intervalFactor": 1,
-          "legendFormat": "{{instance}}-{{uri}}",
+          "legendFormat": "{{app_kubernetes_io_name}}-{{uri}}",
           "refId": "A"
         }
       ],
@@ -794,16 +798,57 @@
   "style": "dark",
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "definition": "label_values(gin_request_total, app_kubernetes_io_name)",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Application",
+        "multi": false,
+        "name": "application",
+        "options": [],
+        "query": {
+          "query": "label_values(gin_request_total, app_kubernetes_io_name)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}"
+      },
+      {
+        "current": {},
+        "definition": "label_values(gin_request_total{app_kubernetes_io_name=~\"$application\"}, instance)",
+        "hide": 0,
+        "includeAll": true,
+        "label": "Instance",
+        "multi": false,
+        "name": "instance",
+        "options": [],
+        "query": {
+          "query": "label_values(gin_request_total{app_kubernetes_io_name=~\"$application\"}, instance)",
+          "refId": "StandardVariableQuery"
+        },
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query",
+        "datasource": "${DS_PROMETHEUS}"
+      }
+    ]
   },
   "time": {
-    "from": "now-30m",
+    "from": "now-1h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Gin Application Metrics",
   "uid": "FDB061FMz",
-  "version": 6,
+  "version": 9,
   "weekStart": ""
 }
